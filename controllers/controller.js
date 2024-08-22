@@ -5,6 +5,9 @@ import { transporter } from "../config/nodeMailer.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{7,}$/;
+
 export class UserGetController {
   getSignUpPage = (req, res) => {
     res.render("signup", { message: "" });
@@ -60,6 +63,12 @@ export class UserPostController {
         .status(400)
         .render("signup", { message: "Passwords don't match" });
     }
+    if (!passwordRegex.test(password)) {
+      return res.status(400).render("signup", {
+        message:
+          "Password must be at least 7 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
+      });
+    }
     //check if user already exists
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
@@ -67,6 +76,7 @@ export class UserPostController {
         .status(400)
         .render("signup", { message: "User already exists" });
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ username, email, password: hashedPassword });
     try {

@@ -5,6 +5,8 @@ import path from "path";
 import dotenv from "dotenv";
 import session from "express-session";
 import passport from "passport";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
 import { connectUsingMongoose } from "./config/mongodb.js";
 import router from "./routes/routes.js";
@@ -14,6 +16,8 @@ import authrouter from "./routes/authRoutes.js";
 dotenv.config();
 const app = express();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 //SESSION
 app.use(
   session({
@@ -58,6 +62,7 @@ passport.deserializeUser((user, done) => {
 });
 
 // Set Templates
+app.use(express.static(path.join(__dirname, "public")));
 app.set("view engine", "ejs"); // Define template engine
 app.use(ejsLayouts); // Use base template
 app.set("views", path.join(path.resolve(), "views")); // Define template directory
